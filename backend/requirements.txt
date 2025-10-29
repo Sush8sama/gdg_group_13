@@ -1,5 +1,6 @@
 fastapi
 google-genai
 uvicorn
+google-cloud-aiplatform
 vertexai
 google-cloud-speech
