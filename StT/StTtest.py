@@ -2,20 +2,22 @@ from google.cloud import speech
 
 client = speech.SpeechClient()
 
-gcs_uri = "gs://cloud-samples-data/speech/brooklyn_bridge.raw"
-
 def transcribe_speech():
-    audio = speech.RecognitionAudio(uri=gcs_uri)
+    # Load audio file from local path
+    audio_file_path = "StT/luvvoice.com-20251029-nGLoNX.wav"
+    
+    with open(audio_file_path, "rb") as audio_file:
+        content = audio_file.read()
+    
+    audio = speech.RecognitionAudio(content=content)
 
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=16000,
-        language_code="en-US",
+        sample_rate_hertz=44100,
+        audio_channel_count=2,
+        language_code="nl-BE",
     )
 
-    # operation = client.long_running_recognize(config=config, audio=audio)
-
-    # print("Waiting for operation to complete...")
     response = client.recognize(config=config, audio=audio)
 
     for result in response.results:
