@@ -14,10 +14,12 @@ The frontend, called **ing_voice_frontend**, is built with **React (Vite)** and 
 
 ### Backend
 
-The **backend**, developed with **FastAPI**, exposes several endpoints
-- `/incomingAudio` to handle transcription via Google Cloud Speech-to-Text,  
-- `/rag` to generate a RAG-based response using Vertex AI Gemini, and  
-- `/gemini` for direct prompts to the Gemini model without retrieval.  
+The **backend**, developed with **FastAPI**, exposes several endpoints with permissive CORS enabled. These include:
+
+- `/` for health checks,
+- `/incomingAudio` to handle transcription via Google Cloud Speech-to-Text,
+- `/rag` to generate a RAG-based response using Vertex AI Gemini, and
+- `/gemini` for direct prompts to the Gemini model without retrieval.
 
 The backend relies on environment variables for authentication through a service account and intentionally omits traditional authentication to simplify prototype setup.
 
@@ -36,12 +38,18 @@ The data flow begins when a user records an audio message. The frontend sends a 
 ## Regions
 
 To maintain EU data residency, different regional services are used:
+
 - Vertex AI initialization for the backend occurs in `europe-west3`.
 - The RAG module runs in `europe-west1`.
 - The Speech API uses the endpoint `eu-speech.googleapis.com`.
 
 ---
 
+## Problem Statement
+
+The challenge is to provide a low-latency, EU-local voice assistant for banking scenarios. The system must capture and transcribe user speech, retrieve knowledge from internal corpora, and generate context-aware answers. It should support **Dutch (Belgium)** speech (`nl-BE`), but other languages are optional and operate as a lightweight, hack-friendly prototype requiring minimal configuration.
+
+---
 
 ## Solution Details
 
@@ -71,11 +79,9 @@ Browser `MediaRecorder` instances may output `webm/opus` files, whereas the back
 
 The Speech-to-Text API operates synchronously, which can block requests and limit transcription length to about one minute. Streaming transcription is not yet implemented.
 
-
 ### RAG Corpus Selection
 
 At present, the system always selects the last created corpus, with no configuration option to specify a fixed one.
-
 
 ### Security
 
@@ -89,4 +95,16 @@ Logging and error handling are minimal, often resulting in raw HTTP 500 errors w
 
 The system has no built-in quota, caching, or cost-control mechanisms.
 
+### Language Handling
+
+Language are manually chosen and the options are `nl-BE`, `fr-FR`, and `en-US`. The whole app changes to that language.
+
+### Privacy and Data Residency
+
+Although the design assumes EU-local data handling, region mismatches (between west1 and west3) may challenge strict data residency expectations.
+
 ---
+
+## Overall Summary
+
+The prototype demonstrates a functioning, low-latency voice-enabled assistant for banking that operates within EU regions. It successfully combines real-time speech transcription, RAG-based retrieval, and Gemini-driven generation. Nonetheless, it can be improved through better audio encoding alignment, consistent regional configuration, stronger security measures, and enhanced observability.
