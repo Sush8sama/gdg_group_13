@@ -6,7 +6,7 @@ import './styles/index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {/* <App /> */}
-    <Test />
+    <App />
+    {/* <Test /> */}
   </StrictMode>,
 )

@@ -1,3 +1,5 @@
 fastapi
 google-genai
 uvicorn
+vertexai
+google-cloud-speech

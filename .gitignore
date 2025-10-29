@@ -1,2 +1,6 @@
 **/.DS_Store
 StT/texttospeeach-476609-139cc63cb9dd.json
+backend/__pycache__/
+__pycache__/
+*.pyc
+*.pyo
