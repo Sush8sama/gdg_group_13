@@ -11,7 +11,7 @@ CONVO_PATH = BASE_DIR / "convo.json"
 PROJECT_ID = "texttospeeach-476609"
 
 
-def rag_func(payloud_text: str, user_data: str):
+def rag_func(payloud_text: str, user_data: str, language: str):
     vertexai.init(project=PROJECT_ID, location="europe-west1")
 
     # Get existing corpora
@@ -81,9 +81,9 @@ def rag_func(payloud_text: str, user_data: str):
         with open(CONVO_PATH, 'r') as json_file:
             data = json.load(json_file)
         conversation_history = data["conversation"]
-        new_prompt = make_prompt(user_data, payloud_text, conversation_history)
+        new_prompt = make_prompt(user_data, payloud_text, language=language, conversation_history=conversation_history)
     else:
-        new_prompt = make_prompt(user_data, payloud_text)
+        new_prompt = make_prompt(user_data, payloud_text, language=language)
     response = rag_model.generate_content(new_prompt)
     print("Generated response:", response.text)
     update_convo(payloud_text, response.text, user_data)
@@ -100,16 +100,43 @@ def rag_func(payloud_text: str, user_data: str):
     #     print(f"  rag.delete_corpus(name='{corpus.name}')")
 
 
-def make_prompt(user_info, basic_prompt, conversation_history=[]):
-    new_prompt = (
+def make_prompt(user_info, basic_prompt, language, conversation_history=[]):
+    
+    new_prompt_nl = (
         "ROL: Jij bent een chatbot voor bankklanten\n"
         "BERICHT: " + basic_prompt + "\n"
-        "INSTRUCTIE: Het bericht neemt een van de twee vormen aan. 1) Indien het bericht een vraag is beantwoord deze dan en gebruik de gesprekgeschiedenis enkel als het relevant is. 2) Indien het een bevel is, zeg je dat je het gedaan hebt en leg je uit hoe je het gedaan hebt zonder de gesprekgeschiedenis te gebruiken. " + "\n"
+        "INSTRUCTIE: Het bericht neemt een van de twee vormen aan. 1) Indien het bericht een vraag is en dus start met hoe, beantwoord deze dan en gebruik de gesprekgeschiedenis enkel als het relevant is. 2) Indien je iets moet uitvoeren, zeg je dat je het gedaan hebt en leg je uit hoe je het gedaan hebt zonder de gesprekgeschiedenis te gebruiken. " + "\n"
         "CONTEXT: Enkel als de gebruiker info wilt over zijn eigen gegevens kan je de volgende gegevens gebruiken: "
         +str( get_user_data(user_info)) + "\n"
         "GESPREKSGESCHIEDENIS: Hier volgt de gesprekgeschiedenis met de gebruiker, elke lijst in deze lijst bestaat uit de gebruiker bericht en jouw antwoord: " + str(conversation_history) + "\n"
         "ANTWOORDFORMAAT: Het antwoord moet in drie delen worden gegeven: 1) Een vriendelijke erkenning van het bericht 2) Een antwoord op het bericht volgens de instructie. 3) Een vervolgvraag om het gesprek gaande te houden. Elke deel wordt gescheiden door een nieuwe regel.\n"
     )
+
+    new_prompt_en = (
+        "ROLE: You are a chatbot for bank customers\n"
+        "MESSAGE: " + basic_prompt + "\n"
+        "INSTRUCTION: The message takes one of two forms. 1) If the message is a question, answer it and only use the conversation history if it is relevant. 2) If you need to perform an action, say that you have done it and explain how you did it without using the conversation history. " + "\n"
+        "CONTEXT: Only if the user wants information about their own data can you use the following data: "
+        +str( get_user_data(user_info)) + "\n"
+        "CONVERSATION HISTORY: Below is the conversation history with the user, each list in this list consists of the user message and your answer: " + str(conversation_history) + "\n"
+        "ANSWER FORMAT: The answer should be given in three parts: 1) A friendly acknowledgment of the message 2) An answer to the message according to the instruction. 3) A follow-up question to keep the conversation going. Each part is separated by a new line.\n"
+    )
+
+    new_prompt_fr = (
+        "ROLE: Vous êtes un chatbot pour les clients bancaires\n"
+        "MESSAGE: " + basic_prompt + "\n"
+        "INSTRUCTION: Le message prend l'une des deux formes. 1) Si le message est une question, répondez-y et n'utilisez l'historique des conversations que s'il est pertinent. 2) Si vous devez effectuer une action, dites que vous l'avez fait et expliquez comment vous l'avez fait sans utiliser l'historique des conversations. " + "\n"
+        "CONTEXTE: Seulement si l'utilisateur souhaite des informations sur ses propres données, vous pouvez utiliser les données suivantes: "
+        +str( get_user_data(user_info)) + "\n"
+        "HISTORIQUE DE CONVERSATION: Voici l'historique des conversations avec l'utilisateur, chaque liste dans cette liste se compose du message de l'utilisateur et de votre réponse: " + str(conversation_history) + "\n"
+        "FORMAT DE RÉPONSE: La réponse doit être donnée en trois parties: 1) Une reconnaissance amicale du message 2) Une réponse au message selon l'instruction. 3) Une question de suivi pour maintenir la conversation. Chaque partie est séparée par une nouvelle ligne.\n"
+    )
+    if language == "nl-BE":
+        new_prompt = new_prompt_nl
+    elif language == "en-US":
+        new_prompt = new_prompt_en
+    elif language == "fr-FR":
+        new_prompt = new_prompt_fr
     print("THIS IS THE FINAL PROMPT:" ,new_prompt)
     return new_prompt
 

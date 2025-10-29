@@ -1,9 +1,9 @@
 {
-    "user": "1009",
+    "user": "1008",
     "conversation": [
         [
-            "goedenavond",
-            "Goedenavond!\n\nWat kan ik voor u doen?\n\nHeeft u een specifieke vraag of verzoek?\n"
+            "Hoe kan ik mijn kaart stoppen",
+            "Hallo, ik begrijp dat je je kaart wilt stoppen.\n\nJe kunt je kaart op verschillende manieren blokkeren: via de ING Banking app (Diensten > Kaarten > Debetkaarten of Kredietkaarten > Verlies of diefstal), online met itsme\u00ae of je ING Card Reader, of door Card Stop te bellen op +32 (0)78 170 170. Het blokkeren en vervangen van een kaart kost 9,99 euro.\n\nWat is het nummer van je kaart?\n"
         ]
     ]
 }
