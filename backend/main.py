@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import vertexai
 from vertexai.generative_models import GenerativeModel
+from src.rag import rag_func
 
 app = FastAPI()
 app.add_middleware(
@@ -27,12 +28,14 @@ MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 class TextPayload(BaseModel):
     text: str
 
+
 @app.get("/")
 def read_root():
     return {"message": "Hello, Backend!"}
 
 @app.post("/gemini")
 def gemini_prompt(payload: TextPayload):
+    print(f"Received payload: {payload}")
     if not payload.text or not payload.text.strip():
         raise HTTPException(status_code=400, detail="Text payload is required.")
 
@@ -45,3 +48,13 @@ def gemini_prompt(payload: TextPayload):
         # log the underlying error server-side
         # (in production, use structured logging and remove stack traces from responses)
         raise HTTPException(status_code=500, detail=f"Vertex AI error: {str(e)}")
+
+@app.post("/rag")
+def rag_endpoint(prompt: TextPayload):
+    try:
+        ans = rag_func(prompt.text)
+        print(ans)
+        return {"result": ans.text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Vertex AI error: {str(e)}")
+
