@@ -5,15 +5,19 @@ function App() {
   const handleSendRecording = async (audioBlob: Blob) => {
     const formData = new FormData();
     formData.append("file", audioBlob, `recording_${Date.now()}.wav`);
+    formData.append("language_code", "nl-BE");
+    formData.append("user", "user-id-123");
 
-    const response = await fetch("https://your-cloud-api/voice", {
+    const response = await fetch("http://localhost:8000/incomingAudio", {
       method: "POST",
       body: formData,
+      // Remove Content-Type header - browser sets it automatically with boundary
     });
 
     if (!response.ok) throw new Error("Upload failed");
 
     const data = await response.json();
+    // console.log("Assistant response:", data);
     return data.answer; // return assistant response
   };
 

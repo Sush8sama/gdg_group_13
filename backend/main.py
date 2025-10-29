@@ -1,11 +1,12 @@
 # main.py
 import os
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import vertexai
 from vertexai.generative_models import GenerativeModel
 from src.rag import rag_func
+from google.cloud import speech
 
 app = FastAPI()
 app.add_middleware(
@@ -58,3 +59,44 @@ def rag_endpoint(prompt: TextPayload):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Vertex AI error: {str(e)}")
 
+    
+@app.post("/incomingAudio")
+async def process_audio(
+    file: UploadFile = File(...),
+    language_code: str = Form(...),
+    user: str = Form(...)
+):
+    if not file:
+        raise HTTPException(status_code=400, detail="Audio file is required.")
+
+    # Placeholder for audio processing logic
+    try:
+        # Use European regional endpoint for better latency
+        client_options = {"api_endpoint": "eu-speech.googleapis.com"}
+        client = speech.SpeechClient(client_options=client_options)
+        
+        # Read the audio file content directly from the uploaded file
+        content = await file.read()
+        
+        audio = speech.RecognitionAudio(content=content)
+
+        # Use OGG_OPUS encoding for webm/opus audio from browser MediaRecorder
+        config = speech.RecognitionConfig(
+            encoding=speech.RecognitionConfig.AudioEncoding.OGG_OPUS,
+            sample_rate_hertz=48000,  # Standard sample rate for browser MediaRecorder with OPUS
+            audio_channel_count=2,  # Browser MediaRecorder typically records in stereo (2 channels)
+            language_code=language_code,
+        )
+
+        response = client.recognize(config=config, audio=audio)
+        transcript = ""
+        for result in response.results:
+            transcript += result.alternatives[0].transcript
+            # print("Transcript: {}".format(result.alternatives[0].transcript))
+        
+        # Here you would add your audio processing code
+        processed_result = f"Processed audio for user {user} in language {language_code}"
+        return {"result": processed_result, "transcript": transcript, "answer": transcript}
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=f"Audio processing error: {str(e)}")
