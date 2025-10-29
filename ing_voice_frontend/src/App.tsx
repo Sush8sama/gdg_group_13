@@ -68,6 +68,7 @@ function App() {
     const body = JSON.stringify({
       text,
       user: selectedCustomer ? selectedCustomer.customer_id : "",
+      language: language,
     });
 
     const response = await fetch("http://localhost:8000/rag", {
