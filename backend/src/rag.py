@@ -1,13 +1,12 @@
+from vertexai import rag
 from vertexai.generative_models import GenerativeModel, Tool
 import vertexai
-from vertexai import rag
+
 PROJECT_ID = "texttospeeach-476609"
 
 
-
-def rag_func(payloud_text: str):
+def rag_func(payloud_text: str, user_data: str):
     vertexai.init(project=PROJECT_ID, location="europe-west1")
-
 
     # Get existing corpora
     corpora_pager = rag.list_corpora()
@@ -64,12 +63,15 @@ def rag_func(payloud_text: str):
     )
 
     # Use gemini-1.5-flash (available in europe-west3)
-    rag_model = GenerativeModel(model_name="gemini-2.0-flash", tools=[rag_retrieval_tool])
+    rag_model = GenerativeModel(
+        model_name="gemini-2.0-flash", tools=[rag_retrieval_tool]
+    )
 
     # Generate response
     print("\n3. Generating response with RAG...")
-    #response = GenerativeModel(model_name="gemini-2.5-flash").generate_content(payloud_text)
-    response = rag_model.generate_content(payloud_text)
+    # response = GenerativeModel(model_name="gemini-2.5-flash").generate_content(payloud_text)
+    new_prompt = make_prompt(user_data, payloud_text)
+    response = rag_model.generate_content(new_prompt)
     print("Generated response:")
     return response
     # print("\nGenerated response:")
@@ -81,3 +83,13 @@ def rag_func(payloud_text: str):
     # print("To delete a corpus, use:")
     # for i, corpus in enumerate(corpora[:-1]):  # All except the last one
     #     print(f"  rag.delete_corpus(name='{corpus.name}')")
+
+
+def make_prompt(user_info, basic_prompt):
+    new_prompt = (
+        "ROLE: you are a banking customer service chatbot\n"
+        "QUESTION: " + basic_prompt + "\n"
+        "CONTEXT: Only if the user is asking for specific info about their own account you can use their user_info: "
+        + user_info
+    )
+    return new_prompt
