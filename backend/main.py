@@ -35,6 +35,7 @@ MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 class TextPayload(BaseModel):
     text: str
     user: str
+    language: str
 
 
 @app.get("/")
@@ -71,9 +72,32 @@ def rag_endpoint(prompt: TextPayload):
 
         synthesis_input = texttospeech.SynthesisInput(text=answer_text)
 
+        # Language/voice mapping
+        language_map = {
+            "en-GB": {
+                "language_code": "en-GB",
+                "voice_name": "en-GB-Chirp3-HD-Iapetus",
+            },
+            "en-US": {
+                "language_code": "en-US",
+                "voice_name": "en-US-Chirp3-HD-Iapetus",
+            },
+            "nl-BE": {
+                "language_code": "nl-BE",
+                "voice_name": "nl-BE-Chirp3-HD-Vindemiatrix",
+            },
+            "fr-FR": {
+                "language_code": "fr-FR",
+                "voice_name": "fr-FR-Chirp3-HD-Lyra",
+            },
+        }
+
+        # Default to en-GB if language not found
+        lang_info = language_map.get(prompt.language, language_map["en-GB"])
+
         voice = texttospeech.VoiceSelectionParams(
-            language_code="nl-BE",
-            name="nl-BE-Chirp3-HD-Vindemiatrix",
+            language_code=lang_info["language_code"],
+            name=lang_info["voice_name"],
             ssml_gender=texttospeech.SsmlVoiceGender.FEMALE,
         )
 
