@@ -10,19 +10,19 @@ def get_user_data(customer_id: str) -> Dict[str, Any]:
 
     # Load CSVs
     customers_df = pd.read_csv(
-        "/Users/lunamei/Documents/hackaton/ing/gdg_group_13/data/synthetic_data/customers.csv",
+        "../data/synthetic_data/customers.csv",
         dtype=str,
     )
     products_df = pd.read_csv(
-        "/Users/lunamei/Documents/hackaton/ing/gdg_group_13/data/synthetic_data/products.csv",
+        "../data/synthetic_data/products.csv",
         dtype=str,
     )
     products_closed_df = pd.read_csv(
-        "/Users/lunamei/Documents/hackaton/ing/gdg_group_13/data/synthetic_data/products_closed.csv",
+        "../data/synthetic_data/products_closed.csv",
         dtype=str,
     )
     transactions_df = pd.read_csv(
-        "/Users/lunamei/Documents/hackaton/ing/gdg_group_13/data/synthetic_data/transactions.csv",
+        "../data/synthetic_data/transactions.csv",
         dtype=str,
     )
 
