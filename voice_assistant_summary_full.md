@@ -15,10 +15,11 @@ The frontend, called **ing_voice_frontend**, is built with **React (Vite)** and 
 ### Backend
 
 The **backend**, developed with **FastAPI**, exposes several endpoints with permissive CORS enabled. These include:
-- `/` for health checks,  
-- `/incomingAudio` to handle transcription via Google Cloud Speech-to-Text,  
-- `/rag` to generate a RAG-based response using Vertex AI Gemini, and  
-- `/gemini` for direct prompts to the Gemini model without retrieval.  
+
+- `/` for health checks,
+- `/incomingAudio` to handle transcription via Google Cloud Speech-to-Text,
+- `/rag` to generate a RAG-based response using Vertex AI Gemini, and
+- `/gemini` for direct prompts to the Gemini model without retrieval.
 
 The backend relies on environment variables for authentication through a service account and intentionally omits traditional authentication to simplify prototype setup.
 
@@ -37,6 +38,7 @@ The data flow begins when a user records an audio message. The frontend sends a 
 ## Regions
 
 To maintain EU data residency, different regional services are used:
+
 - Vertex AI initialization for the backend occurs in `europe-west3`.
 - The RAG module runs in `europe-west1`.
 - The Speech API uses the endpoint `eu-speech.googleapis.com`.
@@ -45,7 +47,7 @@ To maintain EU data residency, different regional services are used:
 
 ## Problem Statement
 
-The challenge is to provide a low-latency, EU-local voice assistant for banking scenarios. The system must capture and transcribe user speech, retrieve knowledge from internal corpora, and generate context-aware answers. It should support **Dutch (Belgium)** speech (`nl-BE`) and operate as a lightweight, hack-friendly prototype requiring minimal configuration.
+The challenge is to provide a low-latency, EU-local voice assistant for banking scenarios. The system must capture and transcribe user speech, retrieve knowledge from internal corpora, and generate context-aware answers. It should support **Dutch (Belgium)** speech (`nl-BE`), but other languages are optional and operate as a lightweight, hack-friendly prototype requiring minimal configuration.
 
 ---
 
@@ -117,7 +119,7 @@ The system has no built-in quota, caching, or cost-control mechanisms.
 
 ### Language Handling
 
-Language is hard-coded to `nl-BE`, and there is no UI support or automatic detection for other languages.
+Language are manually chosen and the options are `nl-BE`, `fr-FR`, and `en-US`. The whole app changes to that language.
 
 ### Privacy and Data Residency
 
