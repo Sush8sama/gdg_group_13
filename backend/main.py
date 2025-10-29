@@ -96,9 +96,18 @@ async def process_audio(
         for result in response.results:
             transcript += result.alternatives[0].transcript
             # print("Transcript: {}".format(result.alternatives[0].transcript))
-
-        # Here you would add your audio processing code
-        print("THIS IS THE TRANSCRIPT:", transcript)
+        # model = GenerativeModel(model_name="gemini-2.5-flash")
+        # print("Original transcript:", transcript)
+        # # Provide a clear instruction as text; the SDK expects a string or Parts, not a dict
+        # prompt = (
+        #     "Correct and clarify this banking-related user query written in Dutch. "
+        #     "Preserve the original meaning, fix grammar and clarity, and return only the corrected Dutch query without extra commentary.\n\n"
+        #     f"Input: {transcript}"
+        # )
+        # response = model.generate_content(prompt)
+        # corrected_transcript = (response.text or "").strip()
+        # print("Corrected transcript:", corrected_transcript)
+        # Use the corrected transcript for downstream retrieval/answering
         ans = rag_func(transcript, user)
         # print(ans)
 
