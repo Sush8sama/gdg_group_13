@@ -3,9 +3,10 @@ import { useEffect, useRef, useState } from "react";
 
 interface VoiceChatProps {
   onSendRecording: (audioBlob: Blob) => Promise<string>;
+  // prompt: (string: string) => Promise<string>;
 }
 
-const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording }) => {
+const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording   }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [conversation, setConversation] = useState<
     { type: "user" | "assistant"; text: string }[]

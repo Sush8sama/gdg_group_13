@@ -4,3 +4,4 @@ uvicorn
 google-cloud-aiplatform
 vertexai
 google-cloud-speech
+python-multipart

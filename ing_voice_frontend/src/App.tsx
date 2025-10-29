@@ -17,6 +17,8 @@ function App() {
     if (!response.ok) throw new Error("Upload failed");
 
     const data = await response.json();
+
+
     // console.log("Assistant response:", data);
     return data.answer; // return assistant response
   };

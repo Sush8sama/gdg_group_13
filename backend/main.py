@@ -84,7 +84,7 @@ async def process_audio(
         config = speech.RecognitionConfig(
             encoding=speech.RecognitionConfig.AudioEncoding.OGG_OPUS,
             sample_rate_hertz=48000,  # Standard sample rate for browser MediaRecorder with OPUS
-            audio_channel_count=2,  # Browser MediaRecorder typically records in stereo (2 channels)
+            audio_channel_count=1,  # Browser MediaRecorder typically records in stereo (2 channels)
             language_code=language_code,
         )
 
@@ -95,8 +95,13 @@ async def process_audio(
             # print("Transcript: {}".format(result.alternatives[0].transcript))
         
         # Here you would add your audio processing code
+        ans = rag_func(transcript)
+        # print(ans)
+
+
         processed_result = f"Processed audio for user {user} in language {language_code}"
-        return {"result": processed_result, "transcript": transcript, "answer": transcript}
+
+        return {"result": processed_result, "transcript": transcript, "answer": ans.text}
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=f"Audio processing error: {str(e)}")
