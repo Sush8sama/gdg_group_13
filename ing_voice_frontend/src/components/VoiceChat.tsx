@@ -38,9 +38,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, 
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/wav",
-        });
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
 
         // User placeholder
         const userPlaceholderIndex = conversation.length;
@@ -55,10 +53,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, 
           // Replace placeholder with transcription
           setConversation((prev) => {
             const newConv = [...prev];
-            newConv[userPlaceholderIndex] = {
-              type: "user",
-              text: data.transcript,
-            };
+            newConv[userPlaceholderIndex] = { type: "user", text: data.transcript };
             return newConv;
           });
 
@@ -72,25 +67,17 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, 
           try {
             const answer = await onGetRAGAnswer(data.transcript);
 
-            // Split by newlines and remove placeholder
-            const lines = answer.answer.split("\n").filter((line) => line.trim() !== "");
+            // Replace assistant placeholder with full answer (single message)
             setConversation((prev) => {
               const newConv = [...prev];
-              newConv.splice(assistantPlaceholderIndex, 1);
-              lines.forEach((line) => {
-                newConv.push({ type: "assistant", text: line });
-              });
+              newConv[assistantPlaceholderIndex] = { type: "assistant", text: answer.answer };
               return newConv;
             });
 
-            // ✅ Play the synthesized voice from the backend if present
+            // Play the synthesized voice if present
             if (answer.audio_base64) {
-              const audio = new Audio(
-                `data:audio/mp3;base64,${answer.audio_base64}`
-              );
-              audio
-                .play()
-                .catch((err) => console.error("Audio playback failed:", err));
+              const audio = new Audio(`data:audio/mp3;base64,${answer.audio_base64}`);
+              audio.play().catch((err) => console.error("Audio playback failed:", err));
             }
           } catch {
             setConversation((prev) => {
@@ -139,10 +126,10 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, 
     }
   };
 
+  // Render assistant text with newlines and bold formatting
   const renderMessageText = (msg: ConversationMessage) => {
     if (msg.type !== "assistant") return msg.text;
 
-    // Split by **bold** and also preserve newlines
     return msg.text.split("\n").map((line, lineIdx) => (
       <span key={lineIdx}>
         {line.split(/(\*\*.*?\*\*)/g).map((chunk, i) =>
@@ -164,10 +151,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, 
           <div
             key={idx}
             className={`message ${msg.type}`}
-            style={{
-              display: "flex",
-              justifyContent: msg.type === "placeholder" ? "center" : undefined,
-            }}
+            style={{ display: "flex", justifyContent: msg.type === "placeholder" ? "center" : undefined }}
           >
             {msg.type === "user" && <Mic size={16} style={{ marginRight: 6 }} />}
             <span className={msg.type === "placeholder" ? "placeholder-text" : undefined}>
