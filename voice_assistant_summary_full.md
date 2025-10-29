@@ -14,8 +14,7 @@ The frontend, called **ing_voice_frontend**, is built with **React (Vite)** and 
 
 ### Backend
 
-The **backend**, developed with **FastAPI**, exposes several endpoints with permissive CORS enabled. These include:
-- `/` for health checks,  
+The **backend**, developed with **FastAPI**, exposes several endpoints
 - `/incomingAudio` to handle transcription via Google Cloud Speech-to-Text,  
 - `/rag` to generate a RAG-based response using Vertex AI Gemini, and  
 - `/gemini` for direct prompts to the Gemini model without retrieval.  
@@ -43,11 +42,6 @@ To maintain EU data residency, different regional services are used:
 
 ---
 
-## Problem Statement
-
-The challenge is to provide a low-latency, EU-local voice assistant for banking scenarios. The system must capture and transcribe user speech, retrieve knowledge from internal corpora, and generate context-aware answers. It should support **Dutch (Belgium)** speech (`nl-BE`) and operate as a lightweight, hack-friendly prototype requiring minimal configuration.
-
----
 
 ## Solution Details
 
@@ -58,16 +52,6 @@ Speech recognition uses Google Cloud Speech-to-Text in synchronous mode. Audio i
 ### RAG Retrieval
 
 The retrieval component automatically selects the most recently created corpus. The configuration retrieves up to five (`top_k = 5`) relevant documents within a vector distance threshold of 0.5. The Gemini model (`gemini-2.0-flash`) is attached using `Tool.from_retrieval`.
-
-### LLM Generation
-
-Two Gemini models are used. The `/gemini` endpoint employs the environment variable `GEMINI_MODEL`, defaulting to `gemini-2.5-flash`, while the RAG system uses `gemini-2.0-flash`. Prompts follow this structure:
-
-```
-ROLE: banking customer service chatbot
-QUESTION: user transcript
-CONTEXT: user_info hint (customer_id)
-```
 
 ---
 
@@ -81,27 +65,17 @@ Each frontend request includes a `customer_id` field representing the user. The 
 
 ### Audio Encoding Mismatch
 
-Browser `MediaRecorder` instances may output `webm/opus` files, whereas the backend expects `OGG_OPUS`. This can be mitigated by setting the client’s MIME type to `"audio/webm;codecs=opus"` and updating backend handling accordingly.
+Browser `MediaRecorder` instances may output `webm/opus` files, whereas the backend expects `OGG_OPUS`.
 
 ### Synchronous STT
 
 The Speech-to-Text API operates synchronously, which can block requests and limit transcription length to about one minute. Streaming transcription is not yet implemented.
 
-### Region Inconsistency
-
-The backend and RAG modules run in different regions (`europe-west3` and `europe-west1`), introducing potential latency and compliance issues.
 
 ### RAG Corpus Selection
 
 At present, the system always selects the last created corpus, with no configuration option to specify a fixed one.
 
-### User Context
-
-Personalization is minimal, relying only on the provided `customer_id` string.
-
-### Model Version Mismatch
-
-The `/gemini` endpoint and RAG module use different model versions (`gemini-2.5-flash` and `gemini-2.0-flash`), which may yield inconsistent results.
 
 ### Security
 
@@ -115,16 +89,4 @@ Logging and error handling are minimal, often resulting in raw HTTP 500 errors w
 
 The system has no built-in quota, caching, or cost-control mechanisms.
 
-### Language Handling
-
-Language is hard-coded to `nl-BE`, and there is no UI support or automatic detection for other languages.
-
-### Privacy and Data Residency
-
-Although the design assumes EU-local data handling, region mismatches (between west1 and west3) may challenge strict data residency expectations.
-
 ---
-
-## Overall Summary
-
-The prototype demonstrates a functioning, low-latency voice-enabled assistant for banking that operates within EU regions. It successfully combines real-time speech transcription, RAG-based retrieval, and Gemini-driven generation. Nonetheless, it can be improved through better audio encoding alignment, consistent regional configuration, stronger security measures, and enhanced observability.
