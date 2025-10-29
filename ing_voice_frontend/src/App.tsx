@@ -13,6 +13,12 @@ interface Customer {
   segment_code: string;
 }
 
+interface AudioResponse {
+  result: string;
+  transcript: string;
+  answer: string;
+}
+
 function App() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -35,7 +41,7 @@ function App() {
       .catch((err) => console.error("Failed to load customers CSV:", err));
   }, []);
 
-  const handleSendRecording = async (audioBlob: Blob) => {
+  const handleSendRecording = async (audioBlob: Blob): Promise<AudioResponse> => {
     const formData = new FormData();
     formData.append("file", audioBlob, `recording_${Date.now()}.wav`);
     formData.append("language_code", "nl-BE");
@@ -49,11 +55,11 @@ function App() {
 
     // if (!response.ok) throw new Error("Upload failed");
 
-    const data = await response.json();
+    const data: AudioResponse = await response.json();
 
 
     // console.log("Assistant response:", data);
-    return data.answer; // return assistant response
+    return data; // return assistant response
   };
 
   return (

@@ -1,9 +1,14 @@
 import { Mic, StopCircle, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+interface AudioResponse {
+  result: string;
+  transcript: string;
+  answer: string;
+}
+
 interface VoiceChatProps {
-  onSendRecording: (audioBlob: Blob) => Promise<string>;
-  onAssistantResponse?: (userText: string) => Promise<string>;
+  onSendRecording: (audioBlob: Blob) => Promise<AudioResponse>;
 }
 
 interface ConversationMessage {
@@ -11,7 +16,7 @@ interface ConversationMessage {
   text: string;
 }
 
-const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onAssistantResponse }) => {
+const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -44,34 +49,25 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onAssistantRespo
         ]);
 
         try {
-          const transcription = await onSendRecording(audioBlob);
+          const data = await onSendRecording(audioBlob);
 
           // Replace placeholder with transcription
           setConversation((prev) => {
             const newConv = [...prev];
-            newConv[userPlaceholderIndex] = { type: "user", text: transcription };
+            newConv[userPlaceholderIndex] = { type: "user", text: data.transcript };
             return newConv;
           });
 
           // Assistant placeholder
           const assistantPlaceholderIndex = conversation.length + 1;
-          setConversation((prev) => [
-            ...prev,
-            { type: "placeholder", text: "💭 Assistant is thinking..." },
-          ]);
-
-          if (onAssistantResponse) {
-            const assistantText = await onAssistantResponse(transcription);
 
             // Replace assistant placeholder with actual response
             setConversation((prev) => {
               const newConv = [...prev];
-              newConv[assistantPlaceholderIndex] = { type: "assistant", text: assistantText };
+              newConv[assistantPlaceholderIndex] = { type: "assistant", text: data.answer };
               return newConv;
             });
-          } else {
-            setConversation((prev) => prev.filter((_, i) => i !== assistantPlaceholderIndex));
-          }
+        
         } catch {
           setConversation((prev) => {
             const newConv = [...prev];
