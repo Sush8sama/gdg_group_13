@@ -58,7 +58,9 @@ async def process_audio(
 
     # Placeholder for audio processing logic
     try:
-        client = speech.SpeechClient()
+        # Use European regional endpoint for better latency
+        client_options = {"api_endpoint": "eu-speech.googleapis.com"}
+        client = speech.SpeechClient(client_options=client_options)
         
         # Read the audio file content directly from the uploaded file
         content = await file.read()
@@ -83,4 +85,5 @@ async def process_audio(
         processed_result = f"Processed audio for user {user} in language {language_code}"
         return {"result": processed_result, "transcript": transcript, "answer": transcript}
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=f"Audio processing error: {str(e)}")
