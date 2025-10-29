@@ -39,7 +39,7 @@ function App() {
     const formData = new FormData();
     formData.append("file", audioBlob, `recording_${Date.now()}.wav`);
     formData.append("language_code", "nl-BE");
-    formData.append("user", "user-id-123");
+    formData.append("user", selectedCustomer ? selectedCustomer.customer_id : "");
 
     const response = await fetch("http://localhost:8000/incomingAudio", {
       method: "POST",

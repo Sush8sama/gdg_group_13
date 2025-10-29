@@ -3,3 +3,4 @@ google-genai
 uvicorn
 vertexai
 google-cloud-speech
+python-multipart
