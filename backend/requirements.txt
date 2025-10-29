@@ -1,0 +1,7 @@
+fastapi
+google-genai
+uvicorn
+google-cloud-aiplatform
+google-cloud-speech
+google-cloud-texttospeech
+python-multipart

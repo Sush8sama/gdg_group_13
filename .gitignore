@@ -1,1 +1,8 @@
 **/.DS_Store
+StT/texttospeeach-476609-139cc63cb9dd.json
+**/texttospeeach-476609-f07f83b08083.json
+**/.vscode/
+backend/__pycache__/
+__pycache__/
+*.pyc
+*.pyo

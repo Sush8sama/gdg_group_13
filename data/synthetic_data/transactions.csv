@@ -64,7 +64,6 @@ transaction_id,product_id,date,amount,currency,description,transaction_type
 3063,2007,2025-10-05,45.50,EUR,Restaurant Payment,Debit
 3064,2007,2025-10-07,199.99,EUR,Flight Booking,Debit
 3065,2007,2025-10-09,75.00,EUR,Hotel Reservation,Debit
-transaction_id,product_id,date,amount,currency,description,transaction_type
 3136,2051,2024-12-15,150.00,EUR,Last Purchase Before Closure,Debit
 3137,2051,2024-12-20,25.00,EUR,Card Closing Fee,Debit
 3138,2052,2024-11-30,5000.00,EUR,Investment Withdrawal,Debit

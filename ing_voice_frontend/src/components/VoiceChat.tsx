@@ -1,0 +1,201 @@
+import { Mic } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import type { AudioResponse, RAGResponse } from "../App";
+import type { Language } from "../translations";
+import translations from "../translations";
+
+interface VoiceChatProps {
+  onSendRecording: (audioBlob: Blob) => Promise<AudioResponse>;
+  onGetRAGAnswer: (text: string) => Promise<RAGResponse>;
+  language: Language;
+}
+
+interface ConversationMessage {
+  type: "user" | "assistant" | "placeholder";
+  text: string;
+}
+
+const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, language }) => {
+  const [isRecording, setIsRecording] = useState(false);
+  const [conversation, setConversation] = useState<ConversationMessage[]>([]);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [conversation]);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/wav",
+        });
+
+        // User placeholder
+        const userPlaceholderIndex = conversation.length;
+        setConversation((prev) => [
+          ...prev,
+          { type: "placeholder", text: translations[language].placeholders.transcribing },
+        ]);
+
+        try {
+          const data = await onSendRecording(audioBlob);
+
+          // Replace placeholder with transcription
+          setConversation((prev) => {
+            const newConv = [...prev];
+            newConv[userPlaceholderIndex] = {
+              type: "user",
+              text: data.transcript,
+            };
+            return newConv;
+          });
+
+          // Assistant placeholder
+          const assistantPlaceholderIndex = conversation.length + 1;
+          setConversation((prev) => [
+            ...prev,
+            { type: "placeholder", text: translations[language].placeholders.thinking },
+          ]);
+
+          try {
+            const answer = await onGetRAGAnswer(data.transcript);
+
+            // Split by newlines and remove placeholder
+            const lines = answer.answer.split("\n").filter((line) => line.trim() !== "");
+            setConversation((prev) => {
+              const newConv = [...prev];
+              newConv.splice(assistantPlaceholderIndex, 1);
+              lines.forEach((line) => {
+                newConv.push({ type: "assistant", text: line });
+              });
+              return newConv;
+            });
+
+            // ✅ Play the synthesized voice from the backend if present
+            if (answer.audio_base64) {
+              const audio = new Audio(
+                `data:audio/mp3;base64,${answer.audio_base64}`
+              );
+              audio
+                .play()
+                .catch((err) => console.error("Audio playback failed:", err));
+            }
+          } catch {
+            setConversation((prev) => {
+              const newConv = [...prev];
+              newConv[assistantPlaceholderIndex] = {
+                type: "assistant",
+                text: "❌ Failed to get answer.",
+              };
+              return newConv;
+            });
+          }
+        } catch {
+          setConversation((prev) => {
+            const newConv = [...prev];
+            newConv[userPlaceholderIndex] = {
+              type: "assistant",
+              text: "❌ Failed to get transcription.",
+            };
+            return newConv;
+          });
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error(err);
+      setConversation((prev) => [
+        ...prev,
+        { type: "assistant", text: "❌ Could not access microphone." },
+      ]);
+    }
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  };
+
+  const cancelRecording = () => {
+    setIsRecording(false);
+    audioChunksRef.current = [];
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.onstop = null;
+      mediaRecorderRef.current.stop();
+    }
+  };
+
+  const renderMessageText = (msg: ConversationMessage) => {
+    if (msg.type !== "assistant") return msg.text;
+
+    // Split by **bold** and also preserve newlines
+    return msg.text.split("\n").map((line, lineIdx) => (
+      <span key={lineIdx}>
+        {line.split(/(\*\*.*?\*\*)/g).map((chunk, i) =>
+          chunk.startsWith("**") && chunk.endsWith("**") ? (
+            <strong key={i}>{chunk.slice(2, -2)}</strong>
+          ) : (
+            <span key={i}>{chunk}</span>
+          )
+        )}
+        <br />
+      </span>
+    ));
+  };
+
+  return (
+    <div className="voice-chat-container">
+      <div className="conversation">
+        {conversation.map((msg, idx) => (
+          <div
+            key={idx}
+            className={`message ${msg.type}`}
+            style={{
+              display: "flex",
+              justifyContent: msg.type === "placeholder" ? "center" : undefined,
+            }}
+          >
+            {msg.type === "user" && <Mic size={16} style={{ marginRight: 6 }} />}
+            <span className={msg.type === "placeholder" ? "placeholder-text" : undefined}>
+              {renderMessageText(msg)}
+            </span>
+          </div>
+        ))}
+        <div ref={chatEndRef} />
+      </div>
+
+      <div className="controls">
+        {!isRecording ? (
+          <button className="record-btn start" onClick={startRecording}>
+            {translations[language].buttons.start}
+          </button>
+        ) : (
+          <>
+            <button className="record-btn stop" onClick={stopRecording}>
+              {translations[language].buttons.send}
+            </button>
+            <button className="record-btn cancel" onClick={cancelRecording}>
+              {translations[language].buttons.stop}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default VoiceChat;
