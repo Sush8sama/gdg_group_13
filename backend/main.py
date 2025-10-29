@@ -1,5 +1,6 @@
 # main.py
 import os
+import base64
 
 import vertexai
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
@@ -8,6 +9,7 @@ from google.cloud import speech
 from pydantic import BaseModel
 from src.rag import rag_func
 from vertexai.generative_models import GenerativeModel
+from google.cloud import texttospeech
 
 app = FastAPI()
 app.add_middleware(
@@ -99,6 +101,31 @@ async def process_audio(
             transcript += result.alternatives[0].transcript
             # print("Transcript: {}".format(result.alternatives[0].transcript))
 
+        # --- NEW: get answer using rag_func ---
+        ans = rag_func(transcript, user)
+        answer_text = ans.text if hasattr(ans, "text") else str(ans)
+
+        # --- NEW: synthesize speech from the answer ---
+        tts_client = texttospeech.TextToSpeechClient()
+        synthesis_input = texttospeech.SynthesisInput(text=answer_text)
+
+        voice = texttospeech.VoiceSelectionParams(
+            language_code="nl-BE",
+            name="nl-BE-Chirp3-HD-Vindemiatrix",
+            ssml_gender=texttospeech.SsmlVoiceGender.FEMALE,
+        )
+
+        audio_config = texttospeech.AudioConfig(
+            audio_encoding=texttospeech.AudioEncoding.MP3
+        )
+
+        tts_response = tts_client.synthesize_speech(
+            input=synthesis_input, voice=voice, audio_config=audio_config
+        )
+
+        # Encode to base64 so frontend can play it easily
+        audio_base64 = base64.b64encode(tts_response.audio_content).decode("utf-8")
+
         processed_result = (
             f"Processed audio for user {user} in language {language_code}"
         )
@@ -106,6 +133,7 @@ async def process_audio(
         return {
             "result": processed_result,
             "transcript": transcript,
+            "audio_base64": audio_base64,
         }
     except Exception as e:
         print(e)

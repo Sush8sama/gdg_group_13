@@ -16,6 +16,7 @@ interface Customer {
 export interface AudioResponse {
   result: string;
   transcript: string;
+  audio_base64?: string;
 }
 
 export interface RAGResponse {
@@ -24,7 +25,9 @@ export interface RAGResponse {
 
 function App() {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
 
   useEffect(() => {
     fetch("/data/customers.csv")
@@ -39,16 +42,20 @@ function App() {
 
         const filteredData = results.data.filter((c) => c.customer_id);
         setCustomers(filteredData);
-
       })
       .catch((err) => console.error("Failed to load customers CSV:", err));
   }, []);
 
-  const handleSendRecording = async (audioBlob: Blob): Promise<AudioResponse> => {
+  const handleSendRecording = async (
+    audioBlob: Blob
+  ): Promise<AudioResponse> => {
     const formData = new FormData();
     formData.append("file", audioBlob, `recording_${Date.now()}.wav`);
     formData.append("language_code", "nl-BE");
-    formData.append("user", selectedCustomer ? selectedCustomer.customer_id : "");
+    formData.append(
+      "user",
+      selectedCustomer ? selectedCustomer.customer_id : ""
+    );
 
     const response = await fetch("http://localhost:8000/incomingAudio", {
       method: "POST",
@@ -60,6 +67,11 @@ function App() {
 
     const data: AudioResponse = await response.json();
 
+    // ✅ Play the synthesized voice from the backend if present
+    if (data.audio_base64) {
+      const audio = new Audio(`data:audio/mp3;base64,${data.audio_base64}`);
+      audio.play().catch((err) => console.error("Audio playback failed:", err));
+    }
 
     // console.log("Assistant response:", data);
     return data; // return assistant response
@@ -115,7 +127,7 @@ function App() {
               : "Tap the button below to start speaking with your digital assistant."}
           </p>
 
-          <VoiceChat 
+          <VoiceChat
             onSendRecording={handleSendRecording}
             onGetRAGAnswer={handleGetRAGResponse}
           />
