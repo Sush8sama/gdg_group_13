@@ -1,12 +1,13 @@
 # main.py
 import os
-from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Form
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+
 import vertexai
-from vertexai.generative_models import GenerativeModel
-from src.rag import rag_func
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import speech
+from pydantic import BaseModel
+from src.rag import rag_func
+from vertexai.generative_models import GenerativeModel
 
 app = FastAPI()
 app.add_middleware(
@@ -31,6 +32,7 @@ MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 class TextPayload(BaseModel):
     text: str
+    user: str
 
 
 @app.get("/")
@@ -55,14 +57,14 @@ def gemini_prompt(payload: TextPayload):
         raise HTTPException(status_code=500, detail=f"Vertex AI error: {str(e)}")
 
 
-# @app.post("/rag")
-# def rag_endpoint(prompt: TextPayload):
-#     try:
-#         ans = rag_func(prompt.text)
-#         print(ans)
-#         return {"result": ans.text}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Vertex AI error: {str(e)}")
+@app.post("/rag")
+def rag_endpoint(prompt: TextPayload):
+    try:
+        ans = rag_func(prompt.text, prompt.user)
+        print(ans)
+        return {"answer": ans.text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Vertex AI error: {str(e)}")
 
 
 @app.post("/incomingAudio")
@@ -96,20 +98,6 @@ async def process_audio(
         for result in response.results:
             transcript += result.alternatives[0].transcript
             # print("Transcript: {}".format(result.alternatives[0].transcript))
-        # model = GenerativeModel(model_name="gemini-2.5-flash")
-        # print("Original transcript:", transcript)
-        # # Provide a clear instruction as text; the SDK expects a string or Parts, not a dict
-        # prompt = (
-        #     "Correct and clarify this banking-related user query written in Dutch. "
-        #     "Preserve the original meaning, fix grammar and clarity, and return only the corrected Dutch query without extra commentary.\n\n"
-        #     f"Input: {transcript}"
-        # )
-        # response = model.generate_content(prompt)
-        # corrected_transcript = (response.text or "").strip()
-        # print("Corrected transcript:", corrected_transcript)
-        # Use the corrected transcript for downstream retrieval/answering
-        ans = rag_func(transcript, user)
-        # print(ans)
 
         processed_result = (
             f"Processed audio for user {user} in language {language_code}"
@@ -118,7 +106,6 @@ async def process_audio(
         return {
             "result": processed_result,
             "transcript": transcript,
-            "answer": ans.text,
         }
     except Exception as e:
         print(e)
