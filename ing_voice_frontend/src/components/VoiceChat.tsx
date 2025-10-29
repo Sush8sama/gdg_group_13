@@ -142,14 +142,19 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, 
   const renderMessageText = (msg: ConversationMessage) => {
     if (msg.type !== "assistant") return msg.text;
 
-    // Parse **bold** markdown
-    return msg.text.split(/(\*\*.*?\*\*)/g).map((chunk, i) =>
-      chunk.startsWith("**") && chunk.endsWith("**") ? (
-        <strong key={i}>{chunk.slice(2, -2)}</strong>
-      ) : (
-        <span key={i}>{chunk}</span>
-      )
-    );
+    // Split by **bold** and also preserve newlines
+    return msg.text.split("\n").map((line, lineIdx) => (
+      <span key={lineIdx}>
+        {line.split(/(\*\*.*?\*\*)/g).map((chunk, i) =>
+          chunk.startsWith("**") && chunk.endsWith("**") ? (
+            <strong key={i}>{chunk.slice(2, -2)}</strong>
+          ) : (
+            <span key={i}>{chunk}</span>
+          )
+        )}
+        <br />
+      </span>
+    ));
   };
 
   return (

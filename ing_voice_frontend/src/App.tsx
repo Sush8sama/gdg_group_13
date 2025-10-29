@@ -91,9 +91,9 @@ function App() {
             setLanguage(e.target.value as "en-US" | "nl-BE" | "fr-FR")
           }
         >
-          <option value="nl-BE">🇳🇱 Dutch</option>
-          <option value="en-US">🇬🇧 English</option>
-          <option value="fr-FR">🇫🇷 French</option>
+          <option value="nl-BE">Nederlands</option>
+          <option value="en-US">English</option>
+          <option value="fr-FR">Français</option>
         </select>
 
         <select
