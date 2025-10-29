@@ -66,18 +66,19 @@ function App() {
   };
 
   const handleGetRAGResponse = async (text: string): Promise<RAGResponse> => {
-    const formData = new FormData();
-    formData.append("text", text);
-    formData.append("user", selectedCustomer ? selectedCustomer.customer_id : "");
+    const body = JSON.stringify({
+      text,
+      user: selectedCustomer ? selectedCustomer.customer_id : "",
+    });
 
     const response = await fetch("http://localhost:8000/rag", {
       method: "POST",
-      body: formData,
+      headers: { "Content-Type": "application/json" },
+      body,
     });
 
     const data: RAGResponse = await response.json();
-
-    return data; // return assistant response
+    return data;
   };
 
   return (
