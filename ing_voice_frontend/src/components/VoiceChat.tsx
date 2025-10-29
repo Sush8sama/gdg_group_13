@@ -10,7 +10,6 @@ interface VoiceChatProps {
   language: Language;
 }
 
-
 interface ConversationMessage {
   type: "user" | "assistant" | "placeholder";
   text: string;
@@ -66,25 +65,28 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, 
           ]);
 
           try {
-            const answer = await onGetRAGAnswer(data.transcript)
-            
-            // Replace assistant placeholder with actual response
+            const answer = await onGetRAGAnswer(data.transcript);
+
+            // Split by newlines and remove placeholder
+            const lines = answer.answer.split("\n").filter((line) => line.trim() !== "");
             setConversation((prev) => {
               const newConv = [...prev];
-              newConv[assistantPlaceholderIndex] = { type: "assistant", text: answer.answer };
+              newConv.splice(assistantPlaceholderIndex, 1);
+              lines.forEach((line) => {
+                newConv.push({ type: "assistant", text: line });
+              });
               return newConv;
             });
           } catch {
             setConversation((prev) => {
-            const newConv = [...prev];
-            newConv[assistantPlaceholderIndex] = {
-              type: "assistant",
-              text: "❌ Failed to get answer.",
-            };
-            return newConv;
-          });
+              const newConv = [...prev];
+              newConv[assistantPlaceholderIndex] = {
+                type: "assistant",
+                text: "❌ Failed to get answer.",
+              };
+              return newConv;
+            });
           }
-
         } catch {
           setConversation((prev) => {
             const newConv = [...prev];
@@ -122,6 +124,19 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, 
     }
   };
 
+  const renderMessageText = (msg: ConversationMessage) => {
+    if (msg.type !== "assistant") return msg.text;
+
+    // Parse **bold** markdown
+    return msg.text.split(/(\*\*.*?\*\*)/g).map((chunk, i) =>
+      chunk.startsWith("**") && chunk.endsWith("**") ? (
+        <strong key={i}>{chunk.slice(2, -2)}</strong>
+      ) : (
+        <span key={i}>{chunk}</span>
+      )
+    );
+  };
+
   return (
     <div className="voice-chat-container">
       <div className="conversation">
@@ -135,10 +150,8 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, 
             }}
           >
             {msg.type === "user" && <Mic size={16} style={{ marginRight: 6 }} />}
-            <span
-              className={msg.type === "placeholder" ? "placeholder-text" : undefined}
-            >
-              {msg.text}
+            <span className={msg.type === "placeholder" ? "placeholder-text" : undefined}>
+              {renderMessageText(msg)}
             </span>
           </div>
         ))}
@@ -161,7 +174,6 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, 
           </>
         )}
       </div>
-
     </div>
   );
 };
