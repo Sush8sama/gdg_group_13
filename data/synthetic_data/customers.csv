@@ -29,7 +29,6 @@ customer_id,name,birthdate,email,phone,address,segment_code
 1028,Michael Stevens,1990-04-14,michael.stevens@example.com,+32470123483,"Meir 22, 2000 Antwerpen",ADULT
 1029,Emma Vandenberghe,1975-05-15,emma.vandenberghe@example.com,+32470123484,"Place du Luxembourg 8, 1050 Brussels",ADULT
 1030,Louis Verstraete,1995-06-16,louis.verstraete@example.com,+32470123485,"Groenplaats 1, 2000 Antwerpen",ADULT
-customer_id,name,birthdate,email,phone,address,segment_code
 1031,Nina Willems,1989-07-17,nina.willems@example.com,+32470123486,"Kortrijksesteenweg 45, 9000 Gent",ADULT
 1032,Karel Janssen,1994-08-18,karel.janssen@example.com,+32470123487,"Leopoldlaan 22, 8300 Knokke",ADULT
 1033,Elena Petrova,1991-09-19,elena.petrova@example.com,+32470123488,"Avenue Louise 250, 1050 Brussels",ADULT
