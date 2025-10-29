@@ -16,11 +16,11 @@ interface Customer {
 export interface AudioResponse {
   result: string;
   transcript: string;
-  audio_base64?: string;
 }
 
 export interface RAGResponse {
   answer: string;
+  audio_base64?: string;
 }
 
 function App() {
@@ -66,12 +66,6 @@ function App() {
     // if (!response.ok) throw new Error("Upload failed");
 
     const data: AudioResponse = await response.json();
-
-    // ✅ Play the synthesized voice from the backend if present
-    if (data.audio_base64) {
-      const audio = new Audio(`data:audio/mp3;base64,${data.audio_base64}`);
-      audio.play().catch((err) => console.error("Audio playback failed:", err));
-    }
 
     // console.log("Assistant response:", data);
     return data; // return assistant response
