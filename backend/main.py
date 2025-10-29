@@ -1,6 +1,7 @@
 # main.py
 import os
 import base64
+import re
 
 import vertexai
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
@@ -67,10 +68,18 @@ def rag_endpoint(prompt: TextPayload):
         ans = rag_func(prompt.text, prompt.user)
         answer_text = ans.text if hasattr(ans, "text") else str(ans)
 
+        cleaned_answer = re.sub(
+            r"\b(star|stars)\b", "", answer_text, flags=re.IGNORECASE
+        )
+        cleaned_answer = re.sub(r"\*+", "", cleaned_answer)  # remove literal asterisks
+        cleaned_answer = re.sub(
+            r"\s{2,}", " ", cleaned_answer
+        ).strip()  # tidy up spaces
+
         # --- Generate TTS using premium nl-BE voice ---
         tts_client = texttospeech.TextToSpeechClient()
 
-        synthesis_input = texttospeech.SynthesisInput(text=answer_text)
+        synthesis_input = texttospeech.SynthesisInput(text=cleaned_answer)
 
         # Language/voice mapping
         language_map = {
@@ -143,7 +152,7 @@ async def process_audio(
         config = speech.RecognitionConfig(
             encoding=speech.RecognitionConfig.AudioEncoding.OGG_OPUS,
             sample_rate_hertz=48000,  # Standard sample rate for browser MediaRecorder with OPUS
-            audio_channel_count=2,  # Browser MediaRecorder typically records in stereo (2 channels)
+            audio_channel_count=1,  # Browser MediaRecorder typically records in stereo (2 channels)
             language_code=language_code,
         )
 

@@ -1,6 +1,12 @@
 from vertexai import rag
 from vertexai.generative_models import GenerativeModel, Tool
 import vertexai
+from src.user_data import get_user_data 
+from pathlib import Path
+import json
+BASE_DIR = Path(__file__).resolve().parent 
+CONVO_PATH = BASE_DIR / "convo.json"
+
 
 PROJECT_ID = "texttospeeach-476609"
 
@@ -70,9 +76,18 @@ def rag_func(payloud_text: str, user_data: str):
     # Generate response
     print("\n3. Generating response with RAG...")
     # response = GenerativeModel(model_name="gemini-2.5-flash").generate_content(payloud_text)
-    new_prompt = make_prompt(user_data, payloud_text)
+
+    if check_convo_user(user_data):
+        with open(CONVO_PATH, 'r') as json_file:
+            data = json.load(json_file)
+        conversation_history = data["conversation"]
+        new_prompt = make_prompt(user_data, payloud_text, conversation_history)
+    else:
+        new_prompt = make_prompt(user_data, payloud_text)
     response = rag_model.generate_content(new_prompt)
-    print("Generated response:")
+    print("Generated response:", response.text)
+    update_convo(payloud_text, response.text, user_data)
+
     return response
     # print("\nGenerated response:")
     # print(response.text)
@@ -85,11 +100,49 @@ def rag_func(payloud_text: str, user_data: str):
     #     print(f"  rag.delete_corpus(name='{corpus.name}')")
 
 
-def make_prompt(user_info, basic_prompt):
+def make_prompt(user_info, basic_prompt, conversation_history=[]):
     new_prompt = (
-        "ROLE: you are a banking customer service chatbot\n"
-        "QUESTION: " + basic_prompt + "\n"
-        "CONTEXT: Only if the user is asking for specific info about their own account you can use their user_info: "
-        + user_info
+        "ROL: Jij bent een chatbot voor bankklanten\n"
+        "BERICHT: " + basic_prompt + "\n"
+        "INSTRUCTIE: Het bericht neemt een van de twee vormen aan. 1) Indien het bericht een vraag is beantwoord deze dan en gebruik de gesprekgeschiedenis enkel als het relevant is. 2) Indien het een bevel is, zeg je dat je het gedaan hebt en leg je uit hoe je het gedaan hebt zonder de gesprekgeschiedenis te gebruiken. " + "\n"
+        "CONTEXT: Enkel als de gebruiker info wilt over zijn eigen gegevens kan je de volgende gegevens gebruiken: "
+        +str( get_user_data(user_info)) + "\n"
+        "GESPREKSGESCHIEDENIS: Hier volgt de gesprekgeschiedenis met de gebruiker, elke lijst in deze lijst bestaat uit de gebruiker bericht en jouw antwoord: " + str(conversation_history) + "\n"
+        "ANTWOORDFORMAAT: Het antwoord moet in drie delen worden gegeven: 1) Een vriendelijke erkenning van het bericht 2) Een antwoord op het bericht volgens de instructie. 3) Een vervolgvraag om het gesprek gaande te houden. Elke deel wordt gescheiden door een nieuwe regel.\n"
     )
+    print("THIS IS THE FINAL PROMPT:" ,new_prompt)
     return new_prompt
+
+def check_convo_user(user):
+    with open(CONVO_PATH, 'r') as json_file:
+        data = json.load(json_file)
+    field = "user"
+    if field not in data:
+        return False
+    if user != data["user"]:
+        return False
+    return True
+
+def update_convo(prompt, answer, user):
+    print("UPDATING CONVO JSON FILE...")
+    with open(CONVO_PATH, 'r') as json_file:
+        data = json.load(json_file)
+        print("CURRENT CONVO JSON:", data)
+    field = "user"
+    print("CHECKING IF USER MATCHES...", user)
+
+
+    if data.get("user") != user or field not in data:
+        print("USER DOESN'T MATCH, CREATING NEW CONVO JSON...")
+        new_data = {
+        "user": user,
+        "conversation": [(prompt, answer)]
+        }
+        with open(CONVO_PATH, 'w') as json_file:
+            json.dump(new_data, json_file, indent=4)
+        print("CREATED NEW CONVO JSON:", new_data)
+    else:
+        data["conversation"].append((prompt, answer))
+        with open(CONVO_PATH, 'w') as json_file:
+            json.dump(data, json_file, indent=4)
+    print("UPDATED CONVO JSON:", data)
