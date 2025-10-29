@@ -13,9 +13,12 @@ interface Customer {
   segment_code: string;
 }
 
-interface AudioResponse {
+export interface AudioResponse {
   result: string;
   transcript: string;
+}
+
+export interface RAGResponse {
   answer: string;
 }
 
@@ -62,6 +65,21 @@ function App() {
     return data; // return assistant response
   };
 
+  const handleGetRAGResponse = async (text: string): Promise<RAGResponse> => {
+    const formData = new FormData();
+    formData.append("text", text);
+    formData.append("user", selectedCustomer ? selectedCustomer.customer_id : "");
+
+    const response = await fetch("http://localhost:8000/rag", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data: RAGResponse = await response.json();
+
+    return data; // return assistant response
+  };
+
   return (
     <div className="app-wrapper">
       {/* Top-right optional user selection */}
@@ -96,7 +114,10 @@ function App() {
               : "Tap the button below to start speaking with your digital assistant."}
           </p>
 
-          <VoiceChat onSendRecording={handleSendRecording} />
+          <VoiceChat 
+            onSendRecording={handleSendRecording}
+            onGetRAGAnswer={handleGetRAGResponse}
+          />
         </div>
       </div>
 

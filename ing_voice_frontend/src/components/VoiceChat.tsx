@@ -1,14 +1,10 @@
 import { Mic, StopCircle, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-
-interface AudioResponse {
-  result: string;
-  transcript: string;
-  answer: string;
-}
+import type { AudioResponse, RAGResponse } from "../App";
 
 interface VoiceChatProps {
   onSendRecording: (audioBlob: Blob) => Promise<AudioResponse>;
+  onGetRAGAnswer: (text: string) => Promise<RAGResponse>
 }
 
 interface ConversationMessage {
@@ -16,7 +12,7 @@ interface ConversationMessage {
   text: string;
 }
 
-const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording }) => {
+const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -60,14 +56,31 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording }) => {
 
           // Assistant placeholder
           const assistantPlaceholderIndex = conversation.length + 1;
+          setConversation((prev) => [
+            ...prev,
+            { type: "placeholder", text: "🎤 Assistant is thinking ..." },
+          ]);
 
+          try {
+            const answer = await onGetRAGAnswer(data.transcript)
+            
             // Replace assistant placeholder with actual response
             setConversation((prev) => {
               const newConv = [...prev];
-              newConv[assistantPlaceholderIndex] = { type: "assistant", text: data.answer };
+              newConv[assistantPlaceholderIndex] = { type: "assistant", text: answer.answer };
               return newConv;
             });
-        
+          } catch {
+            setConversation((prev) => {
+            const newConv = [...prev];
+            newConv[assistantPlaceholderIndex] = {
+              type: "assistant",
+              text: "❌ Failed to get answer.",
+            };
+            return newConv;
+          });
+          }
+
         } catch {
           setConversation((prev) => {
             const newConv = [...prev];
