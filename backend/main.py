@@ -95,6 +95,7 @@ async def process_audio(
             # print("Transcript: {}".format(result.alternatives[0].transcript))
         
         # Here you would add your audio processing code
+        print("THIS IS THE TRANSCRIPT:", transcript)
         ans = rag_func(transcript)
         # print(ans)
 

@@ -1,5 +1,6 @@
 from vertexai.generative_models import GenerativeModel, Tool
 import vertexai
+from vertexai import rag
 PROJECT_ID = "texttospeeach-476609"
 
 
@@ -9,7 +10,7 @@ def rag_func(payloud_text: str):
 
 
     # Get existing corpora
-    corpora_pager = vertexai.rag.list_corpora()
+    corpora_pager = rag.list_corpora()
     corpora = list(corpora_pager)  # Convert to list
 
     print("Available corpora:")
@@ -23,16 +24,16 @@ def rag_func(payloud_text: str):
     print(f"\nUsing corpus: {corpus_name}")
 
     # Configure retrieval
-    rag_retrieval_config = vertexai.rag.RagRetrievalConfig(
+    rag_retrieval_config = rag.RagRetrievalConfig(
         top_k=5,
-        filter=vertexai.rag.Filter(vector_distance_threshold=0.5),
+        filter=rag.Filter(vector_distance_threshold=0.5),
     )
 
     # Test direct retrieval
     print("\n1. Testing direct retrieval...")
-    response = vertexai.rag.retrieval_query(
+    response = rag.retrieval_query(
         rag_resources=[
-            vertexai.rag.RagResource(
+            rag.RagResource(
                 rag_corpus=corpus_name,
             )
         ],
@@ -50,10 +51,10 @@ def rag_func(payloud_text: str):
     # Create RAG retrieval tool
     print("\n2. Setting up RAG model...")
     rag_retrieval_tool = Tool.from_retrieval(
-        retrieval=vertexai.rag.Retrieval(
-            source=vertexai.rag.VertexRagStore(
+        retrieval=rag.Retrieval(
+            source=rag.VertexRagStore(
                 rag_resources=[
-                    vertexai.rag.RagResource(
+                    rag.RagResource(
                         rag_corpus=corpus_name,
                     )
                 ],
@@ -79,4 +80,4 @@ def rag_func(payloud_text: str):
     # print("Note: You have 3 corpora with the same name. To delete old ones:")
     # print("To delete a corpus, use:")
     # for i, corpus in enumerate(corpora[:-1]):  # All except the last one
-    #     print(f"  vertexai.rag.delete_corpus(name='{corpus.name}')")
+    #     print(f"  rag.delete_corpus(name='{corpus.name}')")
