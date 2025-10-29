@@ -11,20 +11,23 @@ from google.cloud import speech
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],      # <-- allow all origins
+    allow_origins=["*"],  # <-- allow all origins
     allow_credentials=False,  # must be False if allow_origins=["*"]
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 PROJECT_ID = os.getenv("PROJECT_ID", "texttospeeach-476609")
-LOCATION = os.getenv("LOCATION", "europe-west3")  # pick a region where the model is available
+LOCATION = os.getenv(
+    "LOCATION", "europe-west3"
+)  # pick a region where the model is available
 
 # initialize once at startup
 vertexai.init(project=PROJECT_ID, location=LOCATION)
 
 # choose the model you want; e.g. "gemini-2.5-flash" or another available model in your region
 MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+
 
 class TextPayload(BaseModel):
     text: str
@@ -33,6 +36,7 @@ class TextPayload(BaseModel):
 @app.get("/")
 def read_root():
     return {"message": "Hello, Backend!"}
+
 
 @app.post("/gemini")
 def gemini_prompt(payload: TextPayload):
@@ -50,21 +54,20 @@ def gemini_prompt(payload: TextPayload):
         # (in production, use structured logging and remove stack traces from responses)
         raise HTTPException(status_code=500, detail=f"Vertex AI error: {str(e)}")
 
-@app.post("/rag")
-def rag_endpoint(prompt: TextPayload):
-    try:
-        ans = rag_func(prompt.text)
-        print(ans)
-        return {"result": ans.text}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Vertex AI error: {str(e)}")
 
-    
+# @app.post("/rag")
+# def rag_endpoint(prompt: TextPayload):
+#     try:
+#         ans = rag_func(prompt.text)
+#         print(ans)
+#         return {"result": ans.text}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Vertex AI error: {str(e)}")
+
+
 @app.post("/incomingAudio")
 async def process_audio(
-    file: UploadFile = File(...),
-    language_code: str = Form(...),
-    user: str = Form(...)
+    file: UploadFile = File(...), language_code: str = Form(...), user: str = Form(...)
 ):
     if not file:
         raise HTTPException(status_code=400, detail="Audio file is required.")
@@ -74,10 +77,10 @@ async def process_audio(
         # Use European regional endpoint for better latency
         client_options = {"api_endpoint": "eu-speech.googleapis.com"}
         client = speech.SpeechClient(client_options=client_options)
-        
+
         # Read the audio file content directly from the uploaded file
         content = await file.read()
-        
+
         audio = speech.RecognitionAudio(content=content)
 
         # Use OGG_OPUS encoding for webm/opus audio from browser MediaRecorder
@@ -93,16 +96,21 @@ async def process_audio(
         for result in response.results:
             transcript += result.alternatives[0].transcript
             # print("Transcript: {}".format(result.alternatives[0].transcript))
-        
+
         # Here you would add your audio processing code
         print("THIS IS THE TRANSCRIPT:", transcript)
-        ans = rag_func(transcript)
+        ans = rag_func(transcript, user)
         # print(ans)
 
+        processed_result = (
+            f"Processed audio for user {user} in language {language_code}"
+        )
 
-        processed_result = f"Processed audio for user {user} in language {language_code}"
-
-        return {"result": processed_result, "transcript": transcript, "answer": ans.text}
+        return {
+            "result": processed_result,
+            "transcript": transcript,
+            "answer": ans.text,
+        }
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=f"Audio processing error: {str(e)}")
