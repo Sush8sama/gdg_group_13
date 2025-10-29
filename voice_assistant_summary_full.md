@@ -61,16 +61,6 @@ Speech recognition uses Google Cloud Speech-to-Text in synchronous mode. Audio i
 
 The retrieval component automatically selects the most recently created corpus. The configuration retrieves up to five (`top_k = 5`) relevant documents within a vector distance threshold of 0.5. The Gemini model (`gemini-2.0-flash`) is attached using `Tool.from_retrieval`.
 
-### LLM Generation
-
-Two Gemini models are used. The `/gemini` endpoint employs the environment variable `GEMINI_MODEL`, defaulting to `gemini-2.5-flash`, while the RAG system uses `gemini-2.0-flash`. Prompts follow this structure:
-
-```
-ROLE: banking customer service chatbot
-QUESTION: user transcript
-CONTEXT: user_info hint (customer_id)
-```
-
 ---
 
 ## Data Handling
@@ -83,27 +73,15 @@ Each frontend request includes a `customer_id` field representing the user. The 
 
 ### Audio Encoding Mismatch
 
-Browser `MediaRecorder` instances may output `webm/opus` files, whereas the backend expects `OGG_OPUS`. This can be mitigated by setting the client’s MIME type to `"audio/webm;codecs=opus"` and updating backend handling accordingly.
+Browser `MediaRecorder` instances may output `webm/opus` files, whereas the backend expects `OGG_OPUS`.
 
 ### Synchronous STT
 
 The Speech-to-Text API operates synchronously, which can block requests and limit transcription length to about one minute. Streaming transcription is not yet implemented.
 
-### Region Inconsistency
-
-The backend and RAG modules run in different regions (`europe-west3` and `europe-west1`), introducing potential latency and compliance issues.
-
 ### RAG Corpus Selection
 
 At present, the system always selects the last created corpus, with no configuration option to specify a fixed one.
-
-### User Context
-
-Personalization is minimal, relying only on the provided `customer_id` string.
-
-### Model Version Mismatch
-
-The `/gemini` endpoint and RAG module use different model versions (`gemini-2.5-flash` and `gemini-2.0-flash`), which may yield inconsistent results.
 
 ### Security
 
