@@ -231,3 +231,53 @@
   background-color: #999;
   transform: scale(1.03);
 }
+
+.user-select-container {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  z-index: 100;
+}
+
+.user-select-container select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.message.placeholder {
+  font-style: italic;
+  align-items: center;
+  color: #555;
+  animation: pulse 1.2s infinite ease-in-out;
+  padding: 8px 12px;
+  border-radius: 16px;
+  background-color: #f0f0f0;
+  max-width: 100%;
+  margin: 8px 0;
+}
+
+/* Optional: make user/assistant bubbles consistent */
+.message.user {
+  background-color: #ff6200;
+  border-radius: 16px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  max-width: 60%;
+}
+
+.message.assistant {
+  background-color: #f1f0f0;
+  border-radius: 16px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  max-width: 60%;
+}
+
+/* Pulse animation */
+@keyframes pulse {
+  0% { opacity: 0.5; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 0.5; transform: scale(0.98); }
+}

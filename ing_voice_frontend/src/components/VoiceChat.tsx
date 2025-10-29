@@ -3,19 +3,21 @@ import { useEffect, useRef, useState } from "react";
 
 interface VoiceChatProps {
   onSendRecording: (audioBlob: Blob) => Promise<string>;
-  // prompt: (string: string) => Promise<string>;
+  onAssistantResponse?: (userText: string) => Promise<string>;
 }
 
-const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording   }) => {
+interface ConversationMessage {
+  type: "user" | "assistant" | "placeholder";
+  text: string;
+}
+
+const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onAssistantResponse }) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [conversation, setConversation] = useState<
-    { type: "user" | "assistant"; text: string }[]
-  >([]);
+  const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Auto-scroll to latest message
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation]);
@@ -34,19 +36,51 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording   }) => {
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
 
+        // User placeholder
+        const userPlaceholderIndex = conversation.length;
         setConversation((prev) => [
           ...prev,
-          { type: "user", text: "🎤 Sending voice message..." },
+          { type: "placeholder", text: "🎤 Transcribing..." },
         ]);
 
         try {
-          const assistantText = await onSendRecording(audioBlob);
-          setConversation((prev) => [...prev, { type: "assistant", text: assistantText }]);
-        } catch {
+          const transcription = await onSendRecording(audioBlob);
+
+          // Replace placeholder with transcription
+          setConversation((prev) => {
+            const newConv = [...prev];
+            newConv[userPlaceholderIndex] = { type: "user", text: transcription };
+            return newConv;
+          });
+
+          // Assistant placeholder
+          const assistantPlaceholderIndex = conversation.length + 1;
           setConversation((prev) => [
             ...prev,
-            { type: "assistant", text: "❌ Failed to get assistant response." },
+            { type: "placeholder", text: "💭 Assistant is thinking..." },
           ]);
+
+          if (onAssistantResponse) {
+            const assistantText = await onAssistantResponse(transcription);
+
+            // Replace assistant placeholder with actual response
+            setConversation((prev) => {
+              const newConv = [...prev];
+              newConv[assistantPlaceholderIndex] = { type: "assistant", text: assistantText };
+              return newConv;
+            });
+          } else {
+            setConversation((prev) => prev.filter((_, i) => i !== assistantPlaceholderIndex));
+          }
+        } catch {
+          setConversation((prev) => {
+            const newConv = [...prev];
+            newConv[userPlaceholderIndex] = {
+              type: "assistant",
+              text: "❌ Failed to get transcription.",
+            };
+            return newConv;
+          });
         }
       };
 
@@ -67,23 +101,32 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording   }) => {
   };
 
   const cancelRecording = () => {
-    // Prevent sending when canceled
     setIsRecording(false);
     audioChunksRef.current = [];
-
-    // Temporarily remove the onstop handler
     if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.onstop = null;
-        mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.onstop = null;
+      mediaRecorderRef.current.stop();
     }
-    };
+  };
 
   return (
     <div className="voice-chat-container">
       <div className="conversation">
         {conversation.map((msg, idx) => (
-          <div key={idx} className={`message ${msg.type}`}>
-            {msg.text}
+          <div
+            key={idx}
+            className={`message ${msg.type}`}
+            style={{
+              display: "flex",
+              justifyContent: msg.type === "placeholder" ? "center" : undefined,
+            }}
+          >
+            {msg.type === "user" && <Mic size={16} style={{ marginRight: 6 }} />}
+            <span
+              className={msg.type === "placeholder" ? "placeholder-text" : undefined}
+            >
+              {msg.text}
+            </span>
           </div>
         ))}
         <div ref={chatEndRef} />
