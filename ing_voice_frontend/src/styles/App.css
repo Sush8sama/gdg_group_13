@@ -234,16 +234,37 @@
 
 .user-select-container {
   position: absolute;
-  top: 10px;
+  top: 15px;
   right: 20px;
   z-index: 100;
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
 .user-select-container select {
-  padding: 6px 10px;
-  border-radius: 6px;
+  padding: 8px 14px;
+  border-radius: 12px;
   border: 1px solid #ccc;
   font-size: 14px;
+  font-weight: 500;
+  background-color: #fff;
+  color: #001b44;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none; /* removes default dropdown arrow on some browsers */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.user-select-container select:hover {
+  border-color: #ff6200;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+}
+
+.user-select-container select:focus {
+  outline: none;
+  border-color: #ff6200;
+  box-shadow: 0 0 0 3px rgba(255, 98, 0, 0.2);
 }
 
 .message.placeholder {

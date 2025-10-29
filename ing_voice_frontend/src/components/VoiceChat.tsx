@@ -1,10 +1,13 @@
-import { Mic, StopCircle, X } from "lucide-react";
+import { Mic } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { AudioResponse, RAGResponse } from "../App";
+import type { Language } from "../translations";
+import translations from "../translations";
 
 interface VoiceChatProps {
   onSendRecording: (audioBlob: Blob) => Promise<AudioResponse>;
   onGetRAGAnswer: (text: string) => Promise<RAGResponse>;
+  language: Language;
 }
 
 interface ConversationMessage {
@@ -12,10 +15,7 @@ interface ConversationMessage {
   text: string;
 }
 
-const VoiceChat: React.FC<VoiceChatProps> = ({
-  onSendRecording,
-  onGetRAGAnswer,
-}) => {
+const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, language }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -46,7 +46,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({
         const userPlaceholderIndex = conversation.length;
         setConversation((prev) => [
           ...prev,
-          { type: "placeholder", text: "🎤 Transcribing..." },
+          { type: "placeholder", text: translations[language].placeholders.transcribing },
         ]);
 
         try {
@@ -66,19 +66,20 @@ const VoiceChat: React.FC<VoiceChatProps> = ({
           const assistantPlaceholderIndex = conversation.length + 1;
           setConversation((prev) => [
             ...prev,
-            { type: "placeholder", text: "💭 Assistant is thinking ..." },
+            { type: "placeholder", text: translations[language].placeholders.thinking },
           ]);
 
           try {
             const answer = await onGetRAGAnswer(data.transcript);
 
-            // Replace assistant placeholder with actual response
+            // Split by newlines and remove placeholder
+            const lines = answer.answer.split("\n").filter((line) => line.trim() !== "");
             setConversation((prev) => {
               const newConv = [...prev];
-              newConv[assistantPlaceholderIndex] = {
-                type: "assistant",
-                text: answer.answer,
-              };
+              newConv.splice(assistantPlaceholderIndex, 1);
+              lines.forEach((line) => {
+                newConv.push({ type: "assistant", text: line });
+              });
               return newConv;
             });
 
@@ -138,6 +139,19 @@ const VoiceChat: React.FC<VoiceChatProps> = ({
     }
   };
 
+  const renderMessageText = (msg: ConversationMessage) => {
+    if (msg.type !== "assistant") return msg.text;
+
+    // Parse **bold** markdown
+    return msg.text.split(/(\*\*.*?\*\*)/g).map((chunk, i) =>
+      chunk.startsWith("**") && chunk.endsWith("**") ? (
+        <strong key={i}>{chunk.slice(2, -2)}</strong>
+      ) : (
+        <span key={i}>{chunk}</span>
+      )
+    );
+  };
+
   return (
     <div className="voice-chat-container">
       <div className="conversation">
@@ -150,15 +164,9 @@ const VoiceChat: React.FC<VoiceChatProps> = ({
               justifyContent: msg.type === "placeholder" ? "center" : undefined,
             }}
           >
-            {msg.type === "user" && (
-              <Mic size={16} style={{ marginRight: 6 }} />
-            )}
-            <span
-              className={
-                msg.type === "placeholder" ? "placeholder-text" : undefined
-              }
-            >
-              {msg.text}
+            {msg.type === "user" && <Mic size={16} style={{ marginRight: 6 }} />}
+            <span className={msg.type === "placeholder" ? "placeholder-text" : undefined}>
+              {renderMessageText(msg)}
             </span>
           </div>
         ))}
@@ -168,15 +176,15 @@ const VoiceChat: React.FC<VoiceChatProps> = ({
       <div className="controls">
         {!isRecording ? (
           <button className="record-btn start" onClick={startRecording}>
-            <Mic size={22} /> Start Recording
+            {translations[language].buttons.start}
           </button>
         ) : (
           <>
             <button className="record-btn stop" onClick={stopRecording}>
-              <StopCircle size={22} /> Stop & Send
+              {translations[language].buttons.send}
             </button>
             <button className="record-btn cancel" onClick={cancelRecording}>
-              <X size={22} /> Cancel
+              {translations[language].buttons.stop}
             </button>
           </>
         )}
