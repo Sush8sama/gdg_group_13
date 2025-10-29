@@ -152,7 +152,7 @@ async def process_audio(
         config = speech.RecognitionConfig(
             encoding=speech.RecognitionConfig.AudioEncoding.OGG_OPUS,
             sample_rate_hertz=48000,  # Standard sample rate for browser MediaRecorder with OPUS
-            audio_channel_count=2,  # Browser MediaRecorder typically records in stereo (2 channels)
+            audio_channel_count=1,  # Browser MediaRecorder typically records in stereo (2 channels)
             language_code=language_code,
         )
 
