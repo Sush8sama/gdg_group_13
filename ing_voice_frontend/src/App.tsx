@@ -1,5 +1,5 @@
-import "./App.css";
-import VoiceChat from "./VoiceChat";
+import VoiceChat from "./components/VoiceChat";
+import "./styles/App.css";
 
 function App() {
   const handleSendRecording = async (audioBlob: Blob) => {
