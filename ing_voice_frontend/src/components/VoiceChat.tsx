@@ -58,7 +58,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer }
           const assistantPlaceholderIndex = conversation.length + 1;
           setConversation((prev) => [
             ...prev,
-            { type: "placeholder", text: "🎤 Assistant is thinking ..." },
+            { type: "placeholder", text: "💭 Assistant is thinking ..." },
           ]);
 
           try {
