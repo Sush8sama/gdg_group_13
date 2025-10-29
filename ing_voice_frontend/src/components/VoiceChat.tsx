@@ -1,18 +1,22 @@
-import { Mic, StopCircle, X } from "lucide-react";
+import { Mic } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { AudioResponse, RAGResponse } from "../App";
+import type { Language } from "../translations";
+import translations from "../translations";
 
 interface VoiceChatProps {
   onSendRecording: (audioBlob: Blob) => Promise<AudioResponse>;
-  onGetRAGAnswer: (text: string) => Promise<RAGResponse>
+  onGetRAGAnswer: (text: string) => Promise<RAGResponse>;
+  language: Language;
 }
+
 
 interface ConversationMessage {
   type: "user" | "assistant" | "placeholder";
   text: string;
 }
 
-const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer }) => {
+const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, language }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -41,7 +45,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer }
         const userPlaceholderIndex = conversation.length;
         setConversation((prev) => [
           ...prev,
-          { type: "placeholder", text: "🎤 Transcribing..." },
+          { type: "placeholder", text: translations[language].placeholders.transcribing },
         ]);
 
         try {
@@ -58,7 +62,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer }
           const assistantPlaceholderIndex = conversation.length + 1;
           setConversation((prev) => [
             ...prev,
-            { type: "placeholder", text: "💭 Assistant is thinking ..." },
+            { type: "placeholder", text: translations[language].placeholders.thinking },
           ]);
 
           try {
@@ -144,19 +148,20 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer }
       <div className="controls">
         {!isRecording ? (
           <button className="record-btn start" onClick={startRecording}>
-            <Mic size={22} /> Start Recording
+            {translations[language].buttons.start}
           </button>
         ) : (
           <>
             <button className="record-btn stop" onClick={stopRecording}>
-              <StopCircle size={22} /> Stop & Send
+              {translations[language].buttons.send}
             </button>
             <button className="record-btn cancel" onClick={cancelRecording}>
-              <X size={22} /> Cancel
+              {translations[language].buttons.stop}
             </button>
           </>
         )}
       </div>
+
     </div>
   );
 };
