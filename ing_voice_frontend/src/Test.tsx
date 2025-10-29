@@ -21,7 +21,7 @@ export default function Test() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/gemini", {
+      const res = await fetch("http://localhost:8000/rag", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

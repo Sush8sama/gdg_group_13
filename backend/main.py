@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import vertexai
 from vertexai.generative_models import GenerativeModel
+from src.rag import rag_func
 from google.cloud import speech
 
 app = FastAPI()
@@ -28,12 +29,14 @@ MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 class TextPayload(BaseModel):
     text: str
 
+
 @app.get("/")
 def read_root():
     return {"message": "Hello, Backend!"}
 
 @app.post("/gemini")
 def gemini_prompt(payload: TextPayload):
+    print(f"Received payload: {payload}")
     if not payload.text or not payload.text.strip():
         raise HTTPException(status_code=400, detail="Text payload is required.")
 
@@ -46,6 +49,16 @@ def gemini_prompt(payload: TextPayload):
         # log the underlying error server-side
         # (in production, use structured logging and remove stack traces from responses)
         raise HTTPException(status_code=500, detail=f"Vertex AI error: {str(e)}")
+
+@app.post("/rag")
+def rag_endpoint(prompt: TextPayload):
+    try:
+        ans = rag_func(prompt.text)
+        print(ans)
+        return {"result": ans.text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Vertex AI error: {str(e)}")
+
     
 @app.post("/incomingAudio")
 async def process_audio(
@@ -58,7 +71,9 @@ async def process_audio(
 
     # Placeholder for audio processing logic
     try:
-        client = speech.SpeechClient()
+        # Use European regional endpoint for better latency
+        client_options = {"api_endpoint": "eu-speech.googleapis.com"}
+        client = speech.SpeechClient(client_options=client_options)
         
         # Read the audio file content directly from the uploaded file
         content = await file.read()
@@ -69,7 +84,7 @@ async def process_audio(
         config = speech.RecognitionConfig(
             encoding=speech.RecognitionConfig.AudioEncoding.OGG_OPUS,
             sample_rate_hertz=48000,  # Standard sample rate for browser MediaRecorder with OPUS
-            audio_channel_count=2,  # Browser MediaRecorder typically records in stereo (2 channels)
+            audio_channel_count=1,  # Browser MediaRecorder typically records in stereo (2 channels)
             language_code=language_code,
         )
 
@@ -80,7 +95,14 @@ async def process_audio(
             # print("Transcript: {}".format(result.alternatives[0].transcript))
         
         # Here you would add your audio processing code
+        print("THIS IS THE TRANSCRIPT:", transcript)
+        ans = rag_func(transcript)
+        # print(ans)
+
+
         processed_result = f"Processed audio for user {user} in language {language_code}"
-        return {"result": processed_result, "transcript": transcript, "answer": transcript}
+
+        return {"result": processed_result, "transcript": transcript, "answer": ans.text}
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=f"Audio processing error: {str(e)}")

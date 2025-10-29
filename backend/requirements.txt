@@ -1,6 +1,6 @@
 fastapi
 google-genai
 uvicorn
-vertexai
+google-cloud-aiplatform
 google-cloud-speech
 python-multipart
