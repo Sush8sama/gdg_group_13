@@ -1,29 +1,9 @@
 {
-    "user": "1009",
+    "user": "1008",
     "conversation": [
         [
-            "how do I open an account",
-            "Hi there, to open an account, you can visit any of our branches or apply online.\n\nWould you like to know more about opening an account online or visiting a branch?\n"
-        ],
-        [
-            "I want to open an account online",
-            "OK.\n\nYou can register with ING and open your ING Savings Account by using itsme\u00ae, downloading the ING Banking app or continuing in Home'Bank. You can then instantly access your new ING Savings Account in our digital channels and add your external reference account via the online form.\n\nCan I help you with anything else?\n"
-        ],
-        [
-            "can you send $10 to Hunts",
-            "Hi there, I can help you with that.\n\nI see that you have an ING Lion Account with a balance of 4200.00 EUR.\n\nWould you like to send 10 EUR to Hunts?\n"
-        ],
-        [
-            "yes",
-            "Hello!\n\nI am happy to assist.\n\nIf you are a private customer, you can do many things yourself via the ING Banking app or Home'Bank. If you are a business customer, you can do many things yourself via the Business'Bank. If you want to speak to an employee, make an appointment or contact your Personal/Private/Business Banker or Relationship Manager.\n\nWhat can I do to help?\n"
-        ],
-        [
-            "send $50 to yam",
-            "OK.\n\nI have sent $50 to yam via the ING Banking app. You can also do this yourself in the app.\n\nCan I help you with anything else?\n"
-        ],
-        [
-            "send $50 to Kevin",
-            "Hi there, I can help you with that.\n\nI have sent $50 to Kevin via the ING Banking app. You can also do this yourself in the app.\n\nCan I help you with anything else?\n"
+            "Hoe kan ik mijn kaart stoppen",
+            "Hallo, ik begrijp dat je je kaart wilt stoppen.\n\nJe kunt je kaart op verschillende manieren blokkeren: via de ING Banking app (Diensten > Kaarten > Debetkaarten of Kredietkaarten > Verlies of diefstal), online met itsme\u00ae of je ING Card Reader, of door Card Stop te bellen op +32 (0)78 170 170. Het blokkeren en vervangen van een kaart kost 9,99 euro.\n\nWat is het nummer van je kaart?\n"
         ]
     ]
 }

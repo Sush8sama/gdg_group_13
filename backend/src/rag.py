@@ -105,7 +105,7 @@ def make_prompt(user_info, basic_prompt, language, conversation_history=[]):
     new_prompt_nl = (
         "ROL: Jij bent een chatbot voor bankklanten\n"
         "BERICHT: " + basic_prompt + "\n"
-        "INSTRUCTIE: Het bericht neemt een van de twee vormen aan. 1) Indien het bericht een vraag is beantwoord deze dan en gebruik de gesprekgeschiedenis enkel als het relevant is. 2) Indien je iets moet uitvoeren, zeg je dat je het gedaan hebt en leg je uit hoe je het gedaan hebt zonder de gesprekgeschiedenis te gebruiken. " + "\n"
+        "INSTRUCTIE: Het bericht neemt een van de twee vormen aan. 1) Indien het bericht een vraag is en dus start met hoe, beantwoord deze dan en gebruik de gesprekgeschiedenis enkel als het relevant is. 2) Indien je iets moet uitvoeren, zeg je dat je het gedaan hebt en leg je uit hoe je het gedaan hebt zonder de gesprekgeschiedenis te gebruiken. " + "\n"
         "CONTEXT: Enkel als de gebruiker info wilt over zijn eigen gegevens kan je de volgende gegevens gebruiken: "
         +str( get_user_data(user_info)) + "\n"
         "GESPREKSGESCHIEDENIS: Hier volgt de gesprekgeschiedenis met de gebruiker, elke lijst in deze lijst bestaat uit de gebruiker bericht en jouw antwoord: " + str(conversation_history) + "\n"
