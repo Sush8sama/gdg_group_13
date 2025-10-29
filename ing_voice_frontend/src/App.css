@@ -1,0 +1,233 @@
+/* ========== GLOBAL LAYOUT ========== */
+
+/* Outer wrapper: fills full screen */
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  background: #f5f6f7;
+  font-family: "Inter", sans-serif;
+  color: #001b44;
+}
+
+/* Centered main container */
+.app-container {
+  height: 100vh;
+  width: 100vw;
+  background: #f5f6f7;
+
+  display: flex;
+  align-items: center; /* centers vertically */
+  justify-content: center; /* centers horizontally */
+
+  font-family: "Inter", sans-serif;
+  color: #001b44;
+  position: relative;
+}
+
+/* ========== MAIN CARD ========== */
+
+/* Center card perfectly */
+.chat-card {
+  width: 100%;
+  max-width: 1500px;
+  height: 700px; /* Bigger card */
+  background: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Footer always sticks to bottom, but not fixed */
+.footer {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #999;
+  padding: 1rem 0;
+}
+
+/* Logo and text styles */
+.chat-logo {
+  width: auto;
+  height: 60px;
+  margin-bottom: 1rem;
+}
+
+.chat-title {
+  font-weight: 700;
+  color: #ff6200;
+  margin-bottom: 1.5rem;
+}
+
+.chat-subtitle {
+  margin-bottom: 2rem;
+  color: #555;
+}
+
+/* ========== OLD RECORDING CONTROLS (INTRO UI) ========== */
+
+.recording-controls {
+  display: flex;
+  justify-content: center; /* center buttons */
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.record-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background-color: #ff6200; /* orange theme */
+  color: white;
+  transition: background 0.2s;
+}
+
+.record-btn:hover {
+  background-color: #d25100; /* slightly darker on hover */
+}
+
+.transcript {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 16px;
+  color: #ff6200;
+}
+
+.transcript.active {
+  font-weight: bold;
+}
+
+/* ========== VOICE CHAT AREA ========== */
+
+.voice-chat-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  margin-top: 1.5rem;
+  background: #fff;
+  border-radius: 1rem;
+  border: 1px solid #eee;
+  padding: 1rem;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+/* Conversation grows smoothly until it hits max-height, then becomes scrollable */
+.conversation {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 98%;
+  padding: 1rem;
+  border-radius: 1rem;
+  background-color: #f9f9f9;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+
+  /* Smooth expanding animation */
+  max-height: 300px;
+  transition: max-height 0.6s ease-in-out, background-color 0.3s ease;
+}
+
+.conversation.grow {
+  max-height: 200px;
+}
+
+.conversation::-webkit-scrollbar {
+  width: 8px;
+}
+
+.conversation::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 8px;
+}
+
+/* Messages */
+.message {
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  max-width: 80%;
+  line-height: 1.4;
+  word-wrap: break-word;
+  font-size: 0.95rem;
+}
+
+/* 🟠 ING brand color applied */
+.message.user {
+  background-color: #ff6200;
+  color: white;
+  align-self: flex-end;
+}
+
+.message.assistant {
+  background-color: #ececec;
+  color: #333;
+  align-self: flex-start;
+}
+
+/* ========== RECORD BUTTON CONTROLS ========== */
+
+.controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+  gap: 1rem;
+}
+
+/* Base button */
+.record-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  padding: 0.75rem 1.25rem;
+  border-radius: 2rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.1s ease;
+}
+
+/* 🟠 Orange theme for all actions */
+.record-btn.start {
+  background-color: #ff6200;
+  color: white;
+}
+
+.record-btn.start:hover {
+  background-color: #d25100;
+  transform: scale(1.03);
+}
+
+.record-btn.stop {
+  background-color: #ff6200;
+  color: white;
+}
+
+.record-btn.stop:hover {
+  background-color: #d25100;
+  transform: scale(1.03);
+}
+
+/* Neutral cancel */
+.record-btn.cancel {
+  background-color: #bbb;
+  color: white;
+}
+
+.record-btn.cancel:hover {
+  background-color: #999;
+  transform: scale(1.03);
+}
