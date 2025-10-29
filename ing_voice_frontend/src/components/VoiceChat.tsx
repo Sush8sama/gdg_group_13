@@ -38,7 +38,9 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, 
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/wav",
+        });
 
         // User placeholder
         const userPlaceholderIndex = conversation.length;
@@ -53,7 +55,10 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, 
           // Replace placeholder with transcription
           setConversation((prev) => {
             const newConv = [...prev];
-            newConv[userPlaceholderIndex] = { type: "user", text: data.transcript };
+            newConv[userPlaceholderIndex] = {
+              type: "user",
+              text: data.transcript,
+            };
             return newConv;
           });
 
@@ -77,6 +82,16 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSendRecording, onGetRAGAnswer, 
               });
               return newConv;
             });
+
+            // ✅ Play the synthesized voice from the backend if present
+            if (answer.audio_base64) {
+              const audio = new Audio(
+                `data:audio/mp3;base64,${answer.audio_base64}`
+              );
+              audio
+                .play()
+                .catch((err) => console.error("Audio playback failed:", err));
+            }
           } catch {
             setConversation((prev) => {
               const newConv = [...prev];

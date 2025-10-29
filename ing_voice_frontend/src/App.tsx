@@ -22,6 +22,7 @@ export interface AudioResponse {
 
 export interface RAGResponse {
   answer: string;
+  audio_base64?: string;
 }
 
 function App() {
@@ -46,7 +47,9 @@ function App() {
       .catch((err) => console.error("Failed to load customers CSV:", err));
   }, []);
 
-  const handleSendRecording = async (audioBlob: Blob): Promise<AudioResponse> => {
+  const handleSendRecording = async (
+    audioBlob: Blob
+  ): Promise<AudioResponse> => {
     const formData = new FormData();
     formData.append("file", audioBlob, `recording_${Date.now()}.wav`);
     formData.append("language_code", language);

@@ -1,5 +1,6 @@
 # main.py
 import os
+import base64
 
 import vertexai
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
@@ -8,6 +9,7 @@ from google.cloud import speech
 from pydantic import BaseModel
 from src.rag import rag_func
 from vertexai.generative_models import GenerativeModel
+from google.cloud import texttospeech
 
 app = FastAPI()
 app.add_middleware(
@@ -60,9 +62,37 @@ def gemini_prompt(payload: TextPayload):
 @app.post("/rag")
 def rag_endpoint(prompt: TextPayload):
     try:
+        # Get the answer from your RAG function
         ans = rag_func(prompt.text, prompt.user)
-        print(ans)
-        return {"answer": ans.text}
+        answer_text = ans.text if hasattr(ans, "text") else str(ans)
+
+        # --- Generate TTS using premium nl-BE voice ---
+        tts_client = texttospeech.TextToSpeechClient()
+
+        synthesis_input = texttospeech.SynthesisInput(text=answer_text)
+
+        voice = texttospeech.VoiceSelectionParams(
+            language_code="nl-BE",
+            name="nl-BE-Chirp3-HD-Vindemiatrix",
+            ssml_gender=texttospeech.SsmlVoiceGender.FEMALE,
+        )
+
+        audio_config = texttospeech.AudioConfig(
+            audio_encoding=texttospeech.AudioEncoding.MP3
+        )
+
+        tts_response = tts_client.synthesize_speech(
+            input=synthesis_input,
+            voice=voice,
+            audio_config=audio_config,
+        )
+
+        # Convert audio bytes to base64 so frontend can play it
+        audio_base64 = base64.b64encode(tts_response.audio_content).decode("utf-8")
+
+        # Return both the text and audio
+        return {"answer": answer_text, "audio_base64": audio_base64}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Vertex AI error: {str(e)}")
 
